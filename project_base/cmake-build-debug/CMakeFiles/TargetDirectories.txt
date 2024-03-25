@@ -1,0 +1,10 @@
+/home/deki/CLionProjects/project_base/cmake-build-debug/CMakeFiles/STB_IMAGE.dir
+/home/deki/CLionProjects/project_base/cmake-build-debug/CMakeFiles/project_base.dir
+/home/deki/CLionProjects/project_base/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/deki/CLionProjects/project_base/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/deki/CLionProjects/project_base/cmake-build-debug/libs/glad/CMakeFiles/glad.dir
+/home/deki/CLionProjects/project_base/cmake-build-debug/libs/glad/CMakeFiles/edit_cache.dir
+/home/deki/CLionProjects/project_base/cmake-build-debug/libs/glad/CMakeFiles/rebuild_cache.dir
+/home/deki/CLionProjects/project_base/cmake-build-debug/libs/imgui/CMakeFiles/imgui.dir
+/home/deki/CLionProjects/project_base/cmake-build-debug/libs/imgui/CMakeFiles/edit_cache.dir
+/home/deki/CLionProjects/project_base/cmake-build-debug/libs/imgui/CMakeFiles/rebuild_cache.dir
