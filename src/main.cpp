@@ -50,7 +50,13 @@ struct PointLight {
     float linear;
     float quadratic;
 };
+struct DirLight {
+    glm::vec3 direction;
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
 
+};
 struct ProgramState {
     glm::vec3 clearColor = glm::vec3(0);
     bool ImGuiEnabled = false;
@@ -59,6 +65,8 @@ struct ProgramState {
     glm::vec3 backpackPosition = glm::vec3(0.0f);
     float backpackScale = 1.0f;
     PointLight pointLight;
+    DirLight dirLight;
+
     ProgramState()
             : camera(glm::vec3(0.0f, 0.0f, 3.0f)) {}
 
@@ -165,12 +173,24 @@ int main() {
 
     // load models
     // -----------
-    Model ourModel("resources/objects/backpack/backpack.obj");
-    ourModel.SetShaderTextureNamePrefix("material.");
+    Model Dog("resources/objects/Dog/scene.gltf");
+    Dog.SetShaderTextureNamePrefix("material.");
+    Model Tree("resources/objects/Tree/scene.gltf");
+    Tree.SetShaderTextureNamePrefix("material.");
+    Model Table("resources/objects/Table/round table Ultimate(free Final).obj");
+    Table.SetShaderTextureNamePrefix("material.");
+    Model Chair("resources/objects/Chair/Rocking_chair_SF.obj");
+    Chair.SetShaderTextureNamePrefix("material.");
+    Model Lamp("resources/objects/Lamp/StreetLamp.obj");
+    Lamp.SetShaderTextureNamePrefix("material.");
+    Model Moon("resources/objects/Moon/Moon.obj");
+    Moon.SetShaderTextureNamePrefix("material.");
+    Model DeskLamp("resources/objects/DeskLamp/scene.gltf");
+    DeskLamp.SetShaderTextureNamePrefix("material.");
 
     PointLight& pointLight = programState->pointLight;
     pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
-    pointLight.ambient = glm::vec3(0.1, 0.1, 0.1);
+    pointLight.ambient = glm::vec3(0.11, 0.11, 0.11);
     pointLight.diffuse = glm::vec3(0.6, 0.6, 0.6);
     pointLight.specular = glm::vec3(1.0, 1.0, 1.0);
 
@@ -178,7 +198,7 @@ int main() {
     pointLight.linear = 0.09f;
     pointLight.quadratic = 0.032f;
 
-
+     DirLight& dirLight = programState->dirLight;
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -204,7 +224,12 @@ int main() {
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
-        pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
+        pointLight.position = glm::vec3(2.0,10.0,6.0 );
+        dirLight.ambient = glm::vec3(0.1, 0.1, 0.1);
+        dirLight.diffuse = glm::vec3(1, 1, 1);
+        dirLight.specular = glm::vec3(1.0, 1.0, 1.0);
+        dirLight.direction = glm::vec3(-10.0,-20.0, 60.0);
+
         ourShader.setVec3("pointLight.position", pointLight.position);
         ourShader.setVec3("pointLight.ambient", pointLight.ambient);
         ourShader.setVec3("pointLight.diffuse", pointLight.diffuse);
@@ -212,6 +237,10 @@ int main() {
         ourShader.setFloat("pointLight.constant", pointLight.constant);
         ourShader.setFloat("pointLight.linear", pointLight.linear);
         ourShader.setFloat("pointLight.quadratic", pointLight.quadratic);
+        ourShader.setVec3("dirLight.position", dirLight.direction);
+        ourShader.setVec3("dirLight.ambient", dirLight.ambient);
+        ourShader.setVec3("dirLight.diffuse", dirLight.diffuse);
+        ourShader.setVec3("dirLight.specular", dirLight.specular);
         ourShader.setVec3("viewPosition", programState->camera.Position);
         ourShader.setFloat("material.shininess", 32.0f);
         // view/projection transformations
@@ -223,11 +252,74 @@ int main() {
 
         // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model,
-                               programState->backpackPosition); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(programState->backpackScale));    // it's a bit too big for our scene, so scale it down
+
+        //Dog
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(9.0,0.0,0.0));
+        model = glm::rotate(model, (float)glm::radians(-45.f),glm::vec3(0.0,1,0.0));
+        model = glm::scale(model, glm::vec3(0.5f,0.5f,0.5f));
         ourShader.setMat4("model", model);
-        ourModel.Draw(ourShader);
+        Dog.Draw(ourShader);
+
+        //Tree
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(0.0,0.0,0.0));
+        model = glm::rotate(model, (float)glm::radians(-90.f),glm::vec3(1.0,0,0.0));
+        model = glm::scale(model, glm::vec3(0.25f,0.25f,0.25f));
+        ourShader.setMat4("model", model);
+        Tree.Draw(ourShader);
+
+        //Table
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(3.0,0.0,7.0));
+        model = glm::scale(model, glm::vec3(2.5f,2.5f,2.5f));
+        ourShader.setMat4("model", model);
+        Table.Draw(ourShader);
+
+        //Chair
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(-3.0,0.0,7.0));
+        model = glm::rotate(model, (float)glm::radians(sin((float)glfwGetTime())* 15),glm::vec3(0.0,0,1.0));
+        model = glm::rotate(model, (float)glm::radians(90.f),glm::vec3(0.0,1,0.0));
+        model = glm::scale(model, glm::vec3(0.8f,0.8f,0.8f));
+        ourShader.setMat4("model", model);
+        Chair.Draw(ourShader);
+
+        //Lamp
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(0.0,-1,17.0));
+        model = glm::rotate(model, (float)glm::radians(80.f),glm::vec3(0.0,1,0.0));
+        model = glm::scale(model, glm::vec3(1.35f,1.35f,1.35f));
+        ourShader.setMat4("model", model);
+        Lamp.Draw(ourShader);
+
+        //Desk Lamp
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(4.6,3.54,7.4));
+        model = glm::rotate(model, (float)glm::radians(-90.f),glm::vec3(1.0,0.0,0.0));
+        model = glm::rotate(model, (float)glm::radians(180.f),glm::vec3(0.0,0.0,1.0));
+        model = glm::scale(model, glm::vec3(0.081f,0.081f,0.081f));
+        ourShader.setMat4("model", model);
+        DeskLamp.Draw(ourShader);
+
+        //Moon
+
+        dirLight.ambient = glm::vec3(1, 1, 1);
+        ourShader.setVec3("dirLight.ambient", dirLight.ambient);
+        ourShader.setFloat("material.shininess", 512.0f);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(10.0,20.0,-60.0));
+        model = glm::scale(model, glm::vec3(1.35f,1.35f,1.35f));
+        ourShader.setMat4("model", model);
+        Moon.Draw(ourShader);
+
 
         if (programState->ImGuiEnabled)
             DrawImGui(programState);

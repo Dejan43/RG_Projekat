@@ -1,0 +1,11 @@
+Model Information:
+* title:	office lamp
+* source:	https://sketchfab.com/3d-models/office-lamp-d934c6b791c34e0fafc30e9625b4c55c
+* author:	maxdragonn (https://sketchfab.com/maxdragon)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "office lamp" (https://sketchfab.com/3d-models/office-lamp-d934c6b791c34e0fafc30e9625b4c55c) by maxdragonn (https://sketchfab.com/maxdragon) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
