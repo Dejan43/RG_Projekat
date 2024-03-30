@@ -12,7 +12,9 @@ enum Direction {
     FORWARD,
     BACKWARD,
     LEFT,
-    RIGHT
+    RIGHT,
+    UP,
+    DOWN
 };
 
 class Camera {
@@ -27,6 +29,7 @@ class Camera {
     }
 public:
     float Zoom = 45.f;
+    float Sprint = 5.f;
     float MovementSpeed = 2.5f;
     float Yaw = -90.0f;
     float Pitch = 0.0f;
@@ -47,6 +50,7 @@ public:
     }
 
     void ProcessKeyboard(Direction direction, float deltaTime) {
+
         float velocity = MovementSpeed * deltaTime;
        switch (direction) {
            case FORWARD: {
@@ -60,6 +64,12 @@ public:
            }break;
            case RIGHT: {
                 Position += Right * velocity;
+           }break;
+           case UP: {
+               Position += Up* velocity;
+           }break;
+           case DOWN: {
+               Position -= Up * velocity;
            }break;
        }
     }
