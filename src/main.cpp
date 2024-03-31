@@ -111,14 +111,16 @@ struct GameState {
     int card = -1;
     int number = 0;
     int pickedCount = 0;
+    vector<bool> used = {false,false,false,false,false,false,false,false};
+    vector<float> rot = {0,0,0,0,0,0,0,0};
+    int last = 0;
+    float timer = 0;
+    bool cleared = true;
+    bool move = false;
+    int now;
 };
 GameState gameState;
 
-vector<bool> used(8, false);
-vector<float> rot(8, 0.0);
-int last = 0;
-float timer = 0;
-bool cleared = true;
 
 // --------------------------------------------------
 ProgramState *programState;
@@ -291,7 +293,7 @@ int main() {
 
     // load and create a texture
     // -------------------------
-    unsigned int texture1, texture2, texture3, texture4, texture5, texture6;
+    unsigned int texture1, texture2, texture3, texture4, texture5;
     // texture 1
     // ---------
     glGenTextures(1, &texture1);
@@ -305,7 +307,7 @@ int main() {
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char *data = stbi_load(FileSystem::getPath("resources/textures/container.jpg").c_str(), &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load(FileSystem::getPath("resources/textures/card.jpg").c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -327,7 +329,7 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load image, create texture and generate mipmaps
-    data = stbi_load(FileSystem::getPath("resources/textures/awesomeface.png").c_str(), &width, &height, &nrChannels, 0);
+    data = stbi_load(FileSystem::getPath("resources/textures/python.png").c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
         // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
@@ -405,28 +407,6 @@ int main() {
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
-// texture 6
-    // ---------
-    glGenTextures(1, &texture6);
-    glBindTexture(GL_TEXTURE_2D, texture6);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    data = stbi_load(FileSystem::getPath("resources/textures/python.png").c_str(), &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
@@ -436,7 +416,6 @@ int main() {
     blendShader.setInt("texture3", 2);
     blendShader.setInt("texture4", 3);
     blendShader.setInt("texture5", 4);
-    blendShader.setInt("texture6", 5);
 
     //initialize point light
     PointLight& pointLight = programState->pointLight;
@@ -605,8 +584,6 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, texture4);
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, texture5);
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, texture6);
         blendShader.use();
         blendShader.setMat4("projection", projection);
         blendShader.setMat4("view", view);
@@ -615,37 +592,44 @@ int main() {
         // USED FOR MINI GAME
         //
         auto it = find(newOrder.begin(), newOrder.end(),gameState.card);
-        int i = it - newOrder.begin();
-        if(gameState.card != -1 && !used[i] && gameState.pickedCount < 4 && cleared) {
+        if(gameState.cleared){
+            gameState.now = it - newOrder.begin();
+            if(gameState.card != -1 && !gameState.used[gameState.now ] && gameState.pickedCount < 4) {
 
-            gameState.number++;
+                gameState.number++;
 
-            used[i] = true;
-            rot[i] = 180.f;
-            if (gameState.number == 1) {
-                last = i;
-            }
-             if (gameState.number == 2) {
-                 gameState.number = 0;
-                 if (i / 2 == last / 2) {
-                     cubePosition2[i] = cardPicked[gameState.pickedCount  * 2];
-                     cubePosition2[last] = cardPicked[gameState.pickedCount*2 + 1];
-                     gameState.pickedCount += 1;
-                 }
-                 else{
-                     timer = glfwGetTime();
-                     cleared = false;
-                     used[last] = false;
-                     used[i] = false;
+                gameState.used[gameState.now ] = true;
+                gameState.rot[gameState.now ] = 180.f;
+                if (gameState.number == 1) {
+                    gameState.last = gameState.now;
+                }
+                if (gameState.number == 2) {
+                    gameState.number = 0;
+                     if (gameState.now  / 2 == gameState.last / 2) {
+                         gameState.move = true;
+                     }
+                     else{
+                         gameState.used[gameState.last] = false;
+                         gameState.used[gameState.now ] = false;
+                     }
+                     gameState.timer = glfwGetTime();
+                     gameState.cleared = false;
                      gameState.card = -1;
-                 }
-             }
-        }
-        if(glfwGetTime() - timer > 1 && !cleared) {
-            for (int i = 0; i < 8; i++) {
-                rot[i] = 0;
+                }
             }
-            cleared = true;
+        }
+        if(glfwGetTime() - gameState.timer > 1 && !gameState.cleared) {
+
+            if(gameState.move){
+                cubePosition2[gameState.now] = cardPicked[gameState.pickedCount  * 2];
+                cubePosition2[gameState.last] = cardPicked[gameState.pickedCount*2 + 1];
+                gameState.pickedCount += 1;
+                gameState.move = false;
+            } else {
+                gameState.rot[gameState.last] = 0;
+                gameState.rot[gameState.now] = 0;
+            }
+            gameState.cleared = true;
         }
         // --------------------------------------------------
 
@@ -666,7 +650,7 @@ int main() {
             model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
             model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(rot[i]), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(gameState.rot[i]), glm::vec3(0.0f, 1.0f, 0.0f));
 
             model = glm::scale(model, glm::vec3(0.7f,0.7f,0.7f));
 
@@ -727,6 +711,8 @@ void processInput(GLFWwindow *window) {
         programState->camera.ProcessKeyboard(R_LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
         programState->camera.ProcessKeyboard(R_RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+        programState->camera.ProcessKeyboard(TABLE_VIEW, deltaTime);
 
 }
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

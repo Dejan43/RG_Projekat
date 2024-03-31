@@ -16,7 +16,8 @@ enum Camera_Movement {
     UP,
     DOWN,
     R_LEFT,
-    R_RIGHT
+    R_RIGHT,
+    TABLE_VIEW
 };
 
 // Default camera values
@@ -91,6 +92,11 @@ public:
             Yaw -= 45 * deltaTime;
         if (direction == R_RIGHT)
             Yaw += 45 * deltaTime;
+        if( direction == TABLE_VIEW) {
+            Position = glm::vec3(-1, 7, 6.6);
+            Yaw = -1;
+            Pitch = -45;
+        }
         updateCameraVectors();
 
     }
