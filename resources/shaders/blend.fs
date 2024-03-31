@@ -13,7 +13,7 @@ uniform int pair;
 uniform bool side;
 void main()
 {
-	// linearly interpolate between both textures (80% container, 20% awesomeface)
+
 	if(side)
 	FragColor = texture(texture1, TexCoord);
 	else{

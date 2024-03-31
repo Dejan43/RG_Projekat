@@ -26,6 +26,7 @@ void processInput(GLFWwindow *window);
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
+unsigned int loadTexture(char const * path);
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -118,6 +119,7 @@ struct GameState {
     bool cleared = true;
     bool move = false;
     int now;
+    bool reset = true;
 };
 GameState gameState;
 
@@ -188,6 +190,7 @@ int main() {
     // -------------------------
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
     Shader blendShader("resources/shaders/blend.vs", "resources/shaders/blend.fs");
+    Shader blendingShader("resources/shaders/blending.vs", "resources/shaders/blending.fs");
 
     // load models
     // -----------
@@ -289,124 +292,51 @@ int main() {
     // texture coord attribute
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    // making victory transparent box
+    float victoryvertices[] = {
 
 
+            -0.5f, 0.0f, 1.0f, 1.0f, 0.0f,
+            0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
+            0.5f, 0.0f, -1.0f, 0.0f, 1.0f,
+            0.5f, 0.0f, -1.0f, 0.0f, 1.0f,
+            -0.5f, 0.0f, -1.0f, 0.0f, 0.0f,
+            -0.5f, 0.0f, 1.0f, 1.0f, 0.0f
+
+
+    };
+    unsigned int VBO1, VAO1;
+
+    glGenVertexArrays(1, &VAO1);
+    glGenBuffers(1, &VBO1);
+
+    glBindVertexArray(VAO1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(victoryvertices), victoryvertices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    // load textures
+    // -------------
+    unsigned int texture1 = loadTexture(FileSystem::getPath("resources/textures/card.jpg").c_str());
+    unsigned int texture2 = loadTexture(FileSystem::getPath("resources/textures/python.png").c_str());
+    unsigned int texture3 = loadTexture(FileSystem::getPath("resources/textures/c++.png").c_str());
     // load and create a texture
     // -------------------------
-    unsigned int texture1, texture2, texture3, texture4, texture5;
-    // texture 1
-    // ---------
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char *data = stbi_load(FileSystem::getPath("resources/textures/card.jpg").c_str(), &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-    // texture 2
-    // ---------
-    glGenTextures(1, &texture2);
-    glBindTexture(GL_TEXTURE_2D, texture2);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    data = stbi_load(FileSystem::getPath("resources/textures/python.png").c_str(), &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-    // texture 3
-    // ---------
-    glGenTextures(1, &texture3);
-    glBindTexture(GL_TEXTURE_2D, texture3);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    data = stbi_load(FileSystem::getPath("resources/textures/c++.png").c_str(), &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-// texture 4
-    // ---------
-    glGenTextures(1, &texture4);
-    glBindTexture(GL_TEXTURE_2D, texture4);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    data = stbi_load(FileSystem::getPath("resources/textures/haskell.png").c_str(), &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-// texture 5
-    // ---------
-    glGenTextures(1, &texture5);
-    glBindTexture(GL_TEXTURE_2D, texture5);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    data = stbi_load(FileSystem::getPath("resources/textures/java.png").c_str(), &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
+    unsigned int texture4 = loadTexture(FileSystem::getPath("resources/textures/haskell.png").c_str());;
+    unsigned int texture5 = loadTexture(FileSystem::getPath("resources/textures/java.png").c_str());;
+    unsigned int texture6 = loadTexture(FileSystem::getPath("resources/textures/victory.png").c_str());;
+
+
+
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
@@ -416,6 +346,8 @@ int main() {
     blendShader.setInt("texture3", 2);
     blendShader.setInt("texture4", 3);
     blendShader.setInt("texture5", 4);
+    blendingShader.use();
+    blendingShader.setInt("texture6", 5);
 
     //initialize point light
     PointLight& pointLight = programState->pointLight;
@@ -432,21 +364,12 @@ int main() {
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // used for game logic
+    vector<int> newOrder(8, -1);
+    glm::vec3 cubePosition2[8];
+
     // render loop
     // -----------
-    srand(time(0));
-    vector<int> newOrder(8,-1);
-    for(int i = 0; i < 8; i++){
-        int x = rand() % 8;
-        while(std::find(newOrder.begin(), newOrder.end(), x) != newOrder.end()){
-            x = rand()%8;
-        }
-        newOrder[i] = x;
-    }
-    glm::vec3 cubePosition2[8];
-    for(int i = 0; i < 8;i++){
-        cubePosition2[i] = cubePositions[newOrder[i]];
-    }
     while (!glfwWindowShouldClose(window)) {
         // per-frame time logic
         // --------------------
@@ -457,6 +380,7 @@ int main() {
         // input
         // -----
         processInput(window);
+
         // render
         // ------
         glClearColor(programState->clearColor.r, programState->clearColor.g, programState->clearColor.b, 1.0f);
@@ -584,6 +508,8 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, texture4);
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, texture5);
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, texture6);
         blendShader.use();
         blendShader.setMat4("projection", projection);
         blendShader.setMat4("view", view);
@@ -591,6 +517,28 @@ int main() {
         // --------------------------------------------------
         // USED FOR MINI GAME
         //
+        if(gameState.reset) {
+            srand(time(0));
+            for (int i = 0; i < 8; i++) {
+                newOrder[i] = -1;
+            }
+            for (int i = 0; i < 8; i++) {
+                int x = rand() % 8;
+                while (std::find(newOrder.begin(), newOrder.end(), x) != newOrder.end()) {
+                    x = rand() % 8;
+                }
+                newOrder[i] = x;
+            }
+            for (int i = 0; i < 8; i++) {
+                cubePosition2[i] = cubePositions[newOrder[i]];
+                gameState.rot[i] = 0;
+                gameState.used[i] = false;
+                gameState.number = 0;
+                gameState.pickedCount = 0;
+                gameState.card = -1;
+            }
+            gameState.reset = false;
+        }
         auto it = find(newOrder.begin(), newOrder.end(),gameState.card);
         if(gameState.cleared){
             gameState.now = it - newOrder.begin();
@@ -632,10 +580,10 @@ int main() {
             gameState.cleared = true;
         }
         // --------------------------------------------------
-
         // render cards
         glBindVertexArray(VAO);
         int pair = 0;
+        bool drawVictory = true;
         for (unsigned int i = 0; i < 8; i++){
             bool side = false;
             if (i%2 == 0)
@@ -661,8 +609,22 @@ int main() {
             side = true;
             blendShader.setBool("side", side);
             glDrawArrays(GL_TRIANGLES, 18, 36);
+
+            if(!gameState.used[i]){
+                drawVictory = false;
+            }
         }
-        
+        if(drawVictory) {
+            blendingShader.use();
+            blendingShader.setMat4("projection", projection);
+            blendingShader.setMat4("view", view);
+            glBindVertexArray(VAO1);
+            glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+            model = glm::translate(model, glm::vec3(2.15,3.74,6.6));
+            model = glm::scale(model, glm::vec3(1.5f,1.5f,1.5f));
+            blendingShader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
         if (programState->ImGuiEnabled)
             DrawImGui(programState);
 
@@ -683,6 +645,8 @@ int main() {
     // ------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, &VAO1);
+    glDeleteBuffers(1, &VBO1);
     glfwTerminate();
     return 0;
 }
@@ -803,5 +767,69 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_6 && action == GLFW_PRESS) gameState.card = 5;
     if (key == GLFW_KEY_7 && action == GLFW_PRESS) gameState.card = 6;
     if (key == GLFW_KEY_8 && action == GLFW_PRESS) gameState.card = 7;
+
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) gameState.reset = true;
     // --------------------------------------------------
 }
+//utility function for loading a 2D texture from file
+// ---------------------------------------------------
+unsigned int loadTexture(char const * path)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
+}
+/*
+ * // texture 6
+    // ---------
+    glGenTextures(1, &texture6);
+    glBindTexture(GL_TEXTURE_2D, texture6);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    data = stbi_load(FileSystem::getPath("resources/textures/victory.png").c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+ */

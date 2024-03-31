@@ -8,7 +8,7 @@ The goal of this memory game is to find all pairs of cards.
 | ```1``` , ```2```, ```3```, ```4```,```5``` , ```6```, ```7```, ```8``` | Choosing the card number  |
 | ```W``` , ```A```, ```S```, ```D```                                     | Moving the camera         |
 | ```F```                                                                 | Focusing on the cards     |
-| ```R```                                                                 | Restarting the level      |
+| ```R```                                                                 | Restarting game           |
 | ```Mouse left/right/up/down```                                          | Changing the camera angle |
 | ```Mouse scroll```                                                      | Zooming the camera        |
 | ```ESC```                                                               | Exiting the game          |
@@ -31,7 +31,7 @@ The goal of this memory game is to find all pairs of cards.
 - [x] Model and Lighting
 - [x] ImGui
 - [ ] Advanced lighting
-- [ ] Blending
+- [x] Blending
 - [ ] Face culling
 
 ### A
