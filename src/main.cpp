@@ -15,7 +15,7 @@
 #include <learnopengl/model.h>
 
 #include <iostream>
-
+#define RAND_MAX 7
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
@@ -105,6 +105,22 @@ void ProgramState::LoadFromFile(std::string filename) {
     }
 }
 
+// --------------------------------------------------
+// USED FOR MINI GAME
+struct GameState {
+    int card = -1;
+    int number = 0;
+    int pickedCount = 0;
+};
+GameState gameState;
+
+vector<bool> used(8, false);
+vector<float> rot(8, 0.0);
+int last = 0;
+float timer = 0;
+bool cleared = true;
+
+// --------------------------------------------------
 ProgramState *programState;
 
 void DrawImGui(ProgramState *programState);
@@ -159,7 +175,6 @@ int main() {
     (void) io;
 
 
-
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
@@ -170,6 +185,7 @@ int main() {
     // build and compile shaders
     // -------------------------
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
+    Shader blendShader("resources/shaders/blend.vs", "resources/shaders/blend.fs");
 
     // load models
     // -----------
@@ -188,6 +204,239 @@ int main() {
     Model DeskLamp("resources/objects/DeskLamp/scene.gltf");
     DeskLamp.SetShaderTextureNamePrefix("material.");
     // making card objects
+    float vertices[] = {
+            -0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
+            0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
+            0.05f, 0.5f, -0.25f, 0.0f, 0.0f,
+            0.05f, 0.5f, -0.25f, 0.0f, 0.0f,
+            -0.05f, 0.5f, -0.25f, 0.0f, 0.0f,
+            -0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
+
+            -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
+            0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
+            0.05f, 0.5f, 0.25f, 0.0f, 0.0f,
+            0.05f, 0.5f, 0.25f, 0.0f, 0.0f,
+            -0.05f, 0.5f, 0.25f, 0.0f, 0.0f,
+            -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
+
+            -0.05f, 0.5f, 0.25f, 1.0f, 0.0f,
+            -0.05f, 0.5f, -0.25f, 1.0f, 1.0f,
+            -0.05f, -0.5f, -0.25f, 0.0f, 1.0f,
+            -0.05f, -0.5f, -0.25f, 0.0f, 1.0f,
+            -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
+            -0.05f, 0.5f, 0.25f, 1.0f, 0.0f,
+
+            0.05f, 0.5f, 0.25f, 1.0f, 0.0f,
+            0.05f, 0.5f, -0.25f, 1.0f, 1.0f,
+            0.05f, -0.5f, -0.25f, 0.0f, 1.0f,
+            0.05f, -0.5f, -0.25f, 0.0f, 1.0f,
+            0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
+            0.05f, 0.5f, 0.25f, 1.0f, 0.0f,
+
+            -0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
+            0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
+            0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
+            0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
+            -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
+            -0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
+
+            -0.05f, 0.5f, -0.25f, 0.0f, 0.0f,
+            0.05f, 0.5f, -0.25f, 0.0f, 0.0f,
+            0.05f, 0.5f, 0.25f, 0.0f, 0.0f,
+            0.05f, 0.5f, 0.25f, 0.0f, 0.0f,
+            -0.05f, 0.5f, 0.25f, 0.0f, 0.0f,
+            -0.05f, 0.5f, -0.25f, 0.0f, 0.0f
+    };
+    // world space positions of our cubes
+    glm::vec3 cubePositions[] = {
+            glm::vec3(2.8f, 3.6f, 5.4f),
+            glm::vec3(2.8f, 3.6f, 6.2f),
+            glm::vec3(2.8f, 3.6f, 7.0f),
+            glm::vec3(2.8f, 3.6f, 7.8),
+            glm::vec3(1.5f, 3.6f, 5.4),
+            glm::vec3(1.5f, 3.6f, 6.2),
+            glm::vec3(1.50f, 3.6f, 7.0),
+            glm::vec3(1.5f, 3.6f, 7.8),
+    };
+    // --------------------------------------------------
+    // USED FOR MINI GAME
+    glm::vec3 cardPicked[] = {
+            glm::vec3( 3.5f,  3.6f,  8.8f),
+            glm::vec3( 3.5,  3.71f, 8.8f),
+            glm::vec3(3.5, 3.82f, 8.8f),
+            glm::vec3(3.5, 3.93f, 8.8f),
+            glm::vec3( 3.5f, 4.04f, 8.8f),
+            glm::vec3(3.5f,  4.15f, 8.8f),
+            glm::vec3( 3.5f, 4.26f, 8.8f),
+            glm::vec3( 3.5f,  4.37f, 8.8f),
+    };
+    //----------------------------------------------------
+
+    unsigned int VBO, VAO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+
+    // load and create a texture
+    // -------------------------
+    unsigned int texture1, texture2, texture3, texture4, texture5, texture6;
+    // texture 1
+    // ---------
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    unsigned char *data = stbi_load(FileSystem::getPath("resources/textures/container.jpg").c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+    // texture 2
+    // ---------
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    data = stbi_load(FileSystem::getPath("resources/textures/awesomeface.png").c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+    // texture 3
+    // ---------
+    glGenTextures(1, &texture3);
+    glBindTexture(GL_TEXTURE_2D, texture3);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    data = stbi_load(FileSystem::getPath("resources/textures/c++.png").c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+// texture 4
+    // ---------
+    glGenTextures(1, &texture4);
+    glBindTexture(GL_TEXTURE_2D, texture4);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    data = stbi_load(FileSystem::getPath("resources/textures/haskell.png").c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+// texture 5
+    // ---------
+    glGenTextures(1, &texture5);
+    glBindTexture(GL_TEXTURE_2D, texture5);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    data = stbi_load(FileSystem::getPath("resources/textures/java.png").c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+// texture 6
+    // ---------
+    glGenTextures(1, &texture6);
+    glBindTexture(GL_TEXTURE_2D, texture6);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    data = stbi_load(FileSystem::getPath("resources/textures/python.png").c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+    // -------------------------------------------------------------------------------------------
+    blendShader.use();
+    blendShader.setInt("texture1", 0);
+    blendShader.setInt("texture2", 1);
+    blendShader.setInt("texture3", 2);
+    blendShader.setInt("texture4", 3);
+    blendShader.setInt("texture5", 4);
+    blendShader.setInt("texture6", 5);
 
     //initialize point light
     PointLight& pointLight = programState->pointLight;
@@ -204,9 +453,21 @@ int main() {
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     // render loop
     // -----------
+    srand(time(0));
+    vector<int> newOrder(8,-1);
+    for(int i = 0; i < 8; i++){
+        int x = rand() % 8;
+        while(std::find(newOrder.begin(), newOrder.end(), x) != newOrder.end()){
+            x = rand()%8;
+        }
+        newOrder[i] = x;
+    }
+    glm::vec3 cubePosition2[8];
+    for(int i = 0; i < 8;i++){
+        cubePosition2[i] = cubePositions[newOrder[i]];
+    }
     while (!glfwWindowShouldClose(window)) {
         // per-frame time logic
         // --------------------
@@ -217,12 +478,11 @@ int main() {
         // input
         // -----
         processInput(window);
-
-
         // render
         // ------
         glClearColor(programState->clearColor.r, programState->clearColor.g, programState->clearColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
@@ -334,6 +594,91 @@ int main() {
 
 
 
+        // bind textures on corresponding texture units
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, texture3);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, texture4);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, texture5);
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, texture6);
+        blendShader.use();
+        blendShader.setMat4("projection", projection);
+        blendShader.setMat4("view", view);
+
+        // --------------------------------------------------
+        // USED FOR MINI GAME
+        //
+        auto it = find(newOrder.begin(), newOrder.end(),gameState.card);
+        int i = it - newOrder.begin();
+        if(gameState.card != -1 && !used[i] && gameState.pickedCount < 4 && cleared) {
+
+            gameState.number++;
+
+            used[i] = true;
+            rot[i] = 180.f;
+            if (gameState.number == 1) {
+                last = i;
+            }
+             if (gameState.number == 2) {
+                 gameState.number = 0;
+                 if (i / 2 == last / 2) {
+                     cubePosition2[i] = cardPicked[gameState.pickedCount  * 2];
+                     cubePosition2[last] = cardPicked[gameState.pickedCount*2 + 1];
+                     gameState.pickedCount += 1;
+                 }
+                 else{
+                     timer = glfwGetTime();
+                     cleared = false;
+                     used[last] = false;
+                     used[i] = false;
+                     gameState.card = -1;
+                 }
+             }
+        }
+        if(glfwGetTime() - timer > 1 && !cleared) {
+            for (int i = 0; i < 8; i++) {
+                rot[i] = 0;
+            }
+            cleared = true;
+        }
+        // --------------------------------------------------
+
+        // render cards
+        glBindVertexArray(VAO);
+        int pair = 0;
+        for (unsigned int i = 0; i < 8; i++){
+            bool side = false;
+            if (i%2 == 0)
+                pair++;
+            blendShader.setBool("side", side);
+            blendShader.setInt("pair", pair);
+
+            // calculate the model matrix for each object and pass it to shader before drawing
+            glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+            model = glm::translate(model, cubePosition2[i]);
+            float angle = 90.0f;
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(rot[i]), glm::vec3(0.0f, 1.0f, 0.0f));
+
+            model = glm::scale(model, glm::vec3(0.7f,0.7f,0.7f));
+
+            blendShader.setMat4("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 18);
+
+            side = true;
+            blendShader.setBool("side", side);
+            glDrawArrays(GL_TRIANGLES, 18, 36);
+        }
+        
         if (programState->ImGuiEnabled)
             DrawImGui(programState);
 
@@ -352,6 +697,8 @@ int main() {
     ImGui::DestroyContext();
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
     glfwTerminate();
     return 0;
 }
@@ -361,7 +708,7 @@ int main() {
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
+    //Movment
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         deltaTime *=5;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -380,8 +727,8 @@ void processInput(GLFWwindow *window) {
         programState->camera.ProcessKeyboard(R_LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
         programState->camera.ProcessKeyboard(R_RIGHT, deltaTime);
-}
 
+}
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -460,4 +807,15 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
     }
+    // --------------------------------------------------
+    // USED FOR MINI GAME
+    if (key == GLFW_KEY_1 && action == GLFW_PRESS) gameState.card = 0;
+    if (key == GLFW_KEY_2 && action == GLFW_PRESS) gameState.card = 1;
+    if (key == GLFW_KEY_3 && action == GLFW_PRESS) gameState.card = 2;
+    if (key == GLFW_KEY_4 && action == GLFW_PRESS) gameState.card = 3;
+    if (key == GLFW_KEY_5 && action == GLFW_PRESS) gameState.card = 4;
+    if (key == GLFW_KEY_6 && action == GLFW_PRESS) gameState.card = 5;
+    if (key == GLFW_KEY_7 && action == GLFW_PRESS) gameState.card = 6;
+    if (key == GLFW_KEY_8 && action == GLFW_PRESS) gameState.card = 7;
+    // --------------------------------------------------
 }
