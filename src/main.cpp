@@ -187,16 +187,18 @@ int main() {
     Moon.SetShaderTextureNamePrefix("material.");
     Model DeskLamp("resources/objects/DeskLamp/scene.gltf");
     DeskLamp.SetShaderTextureNamePrefix("material.");
+    // making card objects
 
+    //initialize point light
     PointLight& pointLight = programState->pointLight;
-    pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
+    pointLight.position = glm::vec3(0.0,9,13.0);
     pointLight.ambient = glm::vec3(0.11, 0.11, 0.11);
-    pointLight.diffuse = glm::vec3(0.9, 0.9, 0.9);
+    pointLight.diffuse = glm::vec3(0.6, 0.6, 0.6);
     pointLight.specular = glm::vec3(1.0, 1.0, 1.0);
 
-    pointLight.constant = 1.0f;
-    pointLight.linear = 0.09f;
-    pointLight.quadratic = 0.032f;
+    pointLight.constant = 0.4f;
+    pointLight.linear = 0.009f;
+    pointLight.quadratic = 0.0032f;
 
      DirLight& dirLight = programState->dirLight;
 
@@ -224,11 +226,10 @@ int main() {
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
-        pointLight.position = glm::vec3(2.0,10.0,6.0 );
         dirLight.ambient = glm::vec3(0.1, 0.1, 0.1);
-        dirLight.diffuse = glm::vec3(1, 1, 1);
+        dirLight.diffuse = glm::vec3(0.7, 0.7, 0.7);
         dirLight.specular = glm::vec3(1.0, 1.0, 1.0);
-        dirLight.direction = glm::vec3(-10.0,-20.0, 60.0);
+        dirLight.direction = glm::vec3(-0.2,-0.5, 0.0);
 
         ourShader.setVec3("pointLight.position", pointLight.position);
         ourShader.setVec3("pointLight.ambient", pointLight.ambient);
@@ -243,6 +244,17 @@ int main() {
         ourShader.setVec3("dirLight.specular", dirLight.specular);
         ourShader.setVec3("viewPosition", programState->camera.Position);
         ourShader.setFloat("material.shininess", 32.0f);
+        // spotLight
+        ourShader.setVec3("spotLight.position", glm::vec3(3.66,7.8,7.4));
+        ourShader.setVec3("spotLight.direction", glm::vec3(-0.2,-1,-0.01));
+        ourShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+        ourShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+        ourShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+        ourShader.setFloat("spotLight.constant", 1.0f);
+        ourShader.setFloat("spotLight.linear", 0.09);
+        ourShader.setFloat("spotLight.quadratic", 0.032);
+        ourShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(25.5f)));
+        ourShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(30.0f)));
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
                                                 (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);

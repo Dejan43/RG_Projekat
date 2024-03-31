@@ -89,7 +89,6 @@ public:
             Position += Up * velocity;
         if (direction == R_LEFT)
             Yaw -= 45 * deltaTime;
-
         if (direction == R_RIGHT)
             Yaw += 45 * deltaTime;
         updateCameraVectors();
