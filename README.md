@@ -32,11 +32,11 @@ The goal of this memory game is to find all pairs of cards.
 - [x] ImGui
 - [x] Advanced lighting
 - [x] Blending
-- [ ] Face culling
+- [x] Face culling
 
 ### A
 - [ ] Frame buffers
-- [ ] Cubemaps
+- [x] Cubemaps
 - [ ] Instancing
 - [ ] Anti Aliasing
 
