@@ -210,6 +210,13 @@ int main() {
     DeskLamp.SetShaderTextureNamePrefix("material.");
     // making card objects
     float vertices[] = {
+            -0.05f, 0.5f, 0.25f, 1.0f, 0.0f,
+            -0.05f, 0.5f, -0.25f, 1.0f, 1.0f,
+            -0.05f, -0.5f, -0.25f, 0.0f, 1.0f,
+            -0.05f, -0.5f, -0.25f, 0.0f, 1.0f,
+            -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
+            -0.05f, 0.5f, 0.25f, 1.0f, 0.0f,
+
             -0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
             0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
             0.05f, 0.5f, -0.25f, 0.0f, 0.0f,
@@ -218,18 +225,11 @@ int main() {
             -0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
 
             -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
+            0.05f, 0.5f, 0.25f, 0.0f, 0.0f,
             0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
             0.05f, 0.5f, 0.25f, 0.0f, 0.0f,
-            0.05f, 0.5f, 0.25f, 0.0f, 0.0f,
+            -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
             -0.05f, 0.5f, 0.25f, 0.0f, 0.0f,
-            -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
-
-            -0.05f, 0.5f, 0.25f, 1.0f, 0.0f,
-            -0.05f, 0.5f, -0.25f, 1.0f, 1.0f,
-            -0.05f, -0.5f, -0.25f, 0.0f, 1.0f,
-            -0.05f, -0.5f, -0.25f, 0.0f, 1.0f,
-            -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
-            -0.05f, 0.5f, 0.25f, 1.0f, 0.0f,
 
             0.05f, 0.5f, 0.25f, 1.0f, 0.0f,
             0.05f, 0.5f, -0.25f, 1.0f, 1.0f,
@@ -239,11 +239,11 @@ int main() {
             0.05f, 0.5f, 0.25f, 1.0f, 0.0f,
 
             -0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
+            0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
             0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
             0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
-            0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
-            -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
             -0.05f, -0.5f, -0.25f, 0.0f, 0.0f,
+            -0.05f, -0.5f, 0.25f, 0.0f, 0.0f,
 
             -0.05f, 0.5f, -0.25f, 0.0f, 0.0f,
             0.05f, 0.5f, -0.25f, 0.0f, 0.0f,
@@ -581,10 +581,12 @@ int main() {
         }
         // --------------------------------------------------
         // render cards
+        glEnable(GL_CULL_FACE);
         glBindVertexArray(VAO);
         int pair = 0;
         bool drawVictory = true;
         for (unsigned int i = 0; i < 8; i++){
+            glCullFace(GL_FRONT);
             bool side = false;
             if (i%2 == 0)
                 pair++;
@@ -599,21 +601,27 @@ int main() {
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
             model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
             model = glm::rotate(model, glm::radians(gameState.rot[i]), glm::vec3(0.0f, 1.0f, 0.0f));
+            if(gameState.rot[i])
+                glCullFace(GL_BACK);
 
             model = glm::scale(model, glm::vec3(0.7f,0.7f,0.7f));
 
             blendShader.setMat4("model", model);
 
-            glDrawArrays(GL_TRIANGLES, 0, 18);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            glCullFace(GL_FRONT);
 
             side = true;
             blendShader.setBool("side", side);
-            glDrawArrays(GL_TRIANGLES, 18, 36);
+            glDrawArrays(GL_TRIANGLES, 6, 36);
 
             if(!gameState.used[i]){
                 drawVictory = false;
             }
         }
+        glDisable(GL_CULL_FACE);
+
         if(drawVictory) {
             blendingShader.use();
             blendingShader.setMat4("projection", projection);

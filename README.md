@@ -30,7 +30,7 @@ The goal of this memory game is to find all pairs of cards.
 - [x] Models
 - [x] Model and Lighting
 - [x] ImGui
-- [ ] Advanced lighting
+- [x] Advanced lighting
 - [x] Blending
 - [ ] Face culling
 

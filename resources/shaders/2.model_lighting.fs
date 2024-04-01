@@ -72,7 +72,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     specular *= attenuation;
     return (ambient + diffuse + specular);
 }
-// calculates the color when using a direct light.
+// calculates the color when using a direct light with blinn.
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
