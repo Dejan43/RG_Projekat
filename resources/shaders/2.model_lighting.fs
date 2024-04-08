@@ -1,8 +1,10 @@
 #version 330 core
 out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 struct PointLight {
     vec3 position;
+    vec3 color;
 
     vec3 specular;
     vec3 diffuse;
@@ -33,6 +35,8 @@ struct DirLight{
 struct SpotLight {
     vec3 position;
     vec3 direction;
+    vec3 color;
+
     float cutOff;
     float outerCutOff;
 
@@ -70,7 +74,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
-    return (ambient + diffuse + specular);
+    return (ambient + diffuse + specular) * light.color;
 }
 // calculates the color when using a direct light with blinn.
 
@@ -113,15 +117,22 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     ambient *= attenuation * intensity;
     diffuse *= attenuation * intensity;
     specular *= attenuation * intensity;
-    return (ambient + diffuse + specular);
+    return (ambient + diffuse + specular) * light.color;
 }
 void main()
 {
     vec3 normal = normalize(Normal);
     vec3 viewDir = normalize(viewPosition - FragPos);
-    vec3 result = CalcPointLight(pointLight, normal, FragPos, viewDir);
-    result += CalcDirLight(dirLight, normal, FragPos, viewDir);
+    vec3 result = vec3(0, 0, 0);
+    result +=  CalcDirLight(dirLight, normal, FragPos, viewDir);
+    result += CalcPointLight(pointLight, normal, FragPos, viewDir);
     result += CalcSpotLight(spotLight, normal, FragPos, viewDir);
 
     FragColor = vec4(result, 1.0);
+    float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+        if(brightness > 1.0)
+            BrightColor = vec4(FragColor.rgb, 1.0);
+        else
+        	BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+
 }

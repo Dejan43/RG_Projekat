@@ -3,15 +3,17 @@
 The goal of this memory game is to find all pairs of cards.
 
 ## Controls
-| Key                                                                     | Description               |
-|:------------------------------------------------------------------------|:--------------------------|
-| ```1``` , ```2```, ```3```, ```4```,```5``` , ```6```, ```7```, ```8``` | Choosing the card number  |
-| ```W``` , ```A```, ```S```, ```D```                                     | Moving the camera         |
-| ```F```                                                                 | Focusing on the cards     |
-| ```R```                                                                 | Restarting game           |
-| ```Mouse left/right/up/down```                                          | Changing the camera angle |
-| ```Mouse scroll```                                                      | Zooming the camera        |
-| ```ESC```                                                               | Exiting the game          |
+| Key                                                                     | Description                    |
+|:------------------------------------------------------------------------|:-------------------------------|
+| ```1``` , ```2```, ```3```, ```4```,```5``` , ```6```, ```7```, ```8``` | Choosing the card number       |
+| ```W``` , ```A```, ```S```, ```D```                                     | Moving the camera              |
+| ```Space``` , ```Left control```                                        | Moving up and down             |
+| ```B``` ,```N``` , ```M```                                              | Bloom on/off, exposure dec/inc |
+| ```F```                                                                 | Focusing on the cards          |
+| ```R```                                                                 | Restarting game                |
+| ```Mouse left/right/up/down```                                          | Changing the camera angle      |
+| ```Mouse scroll```                                                      | Zooming the camera             |
+| ```ESC```                                                               | Exiting the game               |
 
 # Implemented:
 - [x] Shaders
@@ -43,7 +45,7 @@ The goal of this memory game is to find all pairs of cards.
 ### B
 - [ ] Point shadows
 - [ ] Normal mapping, Parallax mapping
-- [ ] HDR, Bloom
+- [x] HDR, Bloom
 - [ ] Deffered Shading
 - [ ] SSAO
 
