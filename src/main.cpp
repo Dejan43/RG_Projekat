@@ -32,8 +32,8 @@ unsigned int loadTexture(char const * path);
 void renderQuad();
 void renderCube();
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
 bool bloom = true;
 bool bloomKeyPressed = false;
 float exposure = 1.0f;
@@ -345,16 +345,15 @@ int main() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     stbi_set_flip_vertically_on_load(false);
-
-    vector<std::string> faces {
-            FileSystem::getPath("resources/textures/skybox/front.png"),
-            FileSystem::getPath("resources/textures/skybox/back.png"),
-            FileSystem::getPath("resources/textures/skybox/top.png"),
-            FileSystem::getPath("resources/textures/skybox/bottom.png"),
-            FileSystem::getPath("resources/textures/skybox/right.png"),
-            FileSystem::getPath("resources/textures/skybox/left.png"),
-
-    };
+    vector<std::string> faces
+            {
+                    FileSystem::getPath("resources/textures/skybox/right.jpg"),
+                    FileSystem::getPath("resources/textures/skybox/left.jpg"),
+                    FileSystem::getPath("resources/textures/skybox/top.jpg"),
+                    FileSystem::getPath("resources/textures/skybox/bottom.jpg"),
+                    FileSystem::getPath("resources/textures/skybox/front.jpg"),
+                    FileSystem::getPath("resources/textures/skybox/back.jpg")
+            };
     unsigned int cubemapTexture = loadCubemap(faces);
     stbi_set_flip_vertically_on_load(true);
     //cards VAO
@@ -557,9 +556,9 @@ int main() {
         // don't forget to enable shader before setting uniforms
         ourShader.use();
         dirLight.ambient = glm::vec3(0.02, 0.02, 0.02);
-        dirLight.diffuse = glm::vec3(0.15, 0.15, 0.15);
+        dirLight.diffuse = glm::vec3(0.25, 0.25, 0.25);
         dirLight.specular = glm::vec3(0.20, 0.20, 0.20);
-        dirLight.direction = glm::vec3(-0.2,-0.5, 0.0);
+        dirLight.direction = glm::vec3(-0.1,-0.5, 1.0);
 
         ourShader.setVec3("pointLight.position", pointLight.position);
         ourShader.setVec3("pointLight.ambient", pointLight.ambient);

@@ -1,5 +1,5 @@
-/snap/clion/265/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/snap/clion/265/bin/ninja/linux/x64/ninja -G Ninja -S /home/deki/RG_Projekat -B /home/deki/RG_Projekat/cmake-build-debug
+/snap/clion/274/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/snap/clion/274/bin/ninja/linux/x64/ninja -G Ninja -S /home/deki/RG_Projekat -B /home/deki/RG_Projekat/cmake-build-debug
 -- Found ASSIMP: /usr/lib/x86_64-linux-gnu/libassimp.so
--- Configuring done (0.1s)
+-- Configuring done (0.0s)
 -- Generating done (0.0s)
 -- Build files have been written to: /home/deki/RG_Projekat/cmake-build-debug

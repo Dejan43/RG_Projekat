@@ -6,13 +6,13 @@ The goal of this memory game is to find all pairs of cards.
 | Key                                                                     | Description                    |
 |:------------------------------------------------------------------------|:-------------------------------|
 | ```1``` , ```2```, ```3```, ```4```,```5``` , ```6```, ```7```, ```8``` | Choosing the card number       |
-| ```W``` , ```A```, ```S```, ```D```                                     | Moving the camera              |
-| ```Space``` , ```Left control```                                        | Moving up and down             |
-| ```B``` ,```N``` , ```M```                                              | Bloom on/off, exposure dec/inc |
 | ```F```                                                                 | Focusing on the cards          |
 | ```R```                                                                 | Restarting game                |
+| ```W``` , ```A```, ```S```, ```D```                                     | Moving the camera              |
 | ```Mouse left/right/up/down```                                          | Changing the camera angle      |
 | ```Mouse scroll```                                                      | Zooming the camera             |
+| ```Space``` , ```Left control```                                        | Moving up and down             |
+| ```B``` ,```N``` , ```M```                                              | Bloom on/off, exposure dec/inc |
 | ```ESC```                                                               | Exiting the game               |
 
 # Implemented:
@@ -51,7 +51,7 @@ The goal of this memory game is to find all pairs of cards.
 
 ----------------------------------
 # Objects and textures location
-
-
+https://drive.google.com/file/d/1xmA40iyhLyuoLuxieHd1jTHtbLDHVW-A/view?usp=sharing
+Extract downloaded file into resources
 # Short Video
 
