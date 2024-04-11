@@ -524,7 +524,6 @@ int main() {
     lightScales.push_back(glm::vec3(0.18f));
     lightScales.push_back(glm::vec3(1.02f,0.15,1.55f));
 
-
     // shader configuration
     // --------------------
     ourShader.use();
@@ -609,7 +608,6 @@ int main() {
 
 
         //Dog
-
         model = glm::mat4(1.0f);
         model = glm::translate(model,glm::vec3(9.0,0.0,0.0));
         model = glm::rotate(model, (float)glm::radians(-45.f),glm::vec3(0.0,1,0.0));
@@ -618,7 +616,6 @@ int main() {
         Dog.Draw(ourShader);
 
         //Tree
-
         model = glm::mat4(1.0f);
         model = glm::translate(model,glm::vec3(0.0,0.0,0.0));
         model = glm::rotate(model, (float)glm::radians(-90.f),glm::vec3(1.0,0,0.0));
@@ -627,7 +624,6 @@ int main() {
         Tree.Draw(ourShader);
 
         //Table
-
         model = glm::mat4(1.0f);
         model = glm::translate(model,glm::vec3(3.0,0.0,7.0));
         model = glm::scale(model, glm::vec3(2.5f,2.5f,2.5f));
@@ -635,7 +631,6 @@ int main() {
         Table.Draw(ourShader);
 
         //Chair
-
         model = glm::mat4(1.0f);
         model = glm::translate(model,glm::vec3(-3.0,0.0,7.0));
         model = glm::rotate(model, (float)glm::radians(sin((float)glfwGetTime())* 15),glm::vec3(0.0,0,1.0));
@@ -645,7 +640,6 @@ int main() {
         Chair.Draw(ourShader);
 
         //Lamp
-
         model = glm::mat4(1.0f);
         model = glm::translate(model,glm::vec3(0.0,-1,17.0));
         model = glm::rotate(model, (float)glm::radians(80.f),glm::vec3(0.0,1,0.0));
@@ -654,7 +648,6 @@ int main() {
         Lamp.Draw(ourShader);
 
         //Desk Lamp
-
         model = glm::mat4(1.0f);
         model = glm::translate(model,glm::vec3(4.6,3.54,7.f));
         model = glm::rotate(model, (float)glm::radians(-90.f),glm::vec3(1.0,0.0,0.0));
@@ -664,7 +657,6 @@ int main() {
         DeskLamp.Draw(ourShader);
 
         //Moon
-
         dirLight.ambient = glm::vec3(1, 1, 1);
         ourShader.setVec3("dirLight.ambient", dirLight.ambient);
         ourShader.setFloat("material.shininess", 512.0f);
@@ -674,8 +666,6 @@ int main() {
         model = glm::scale(model, glm::vec3(0.4f,0.4f,0.4f));
         ourShader.setMat4("model", model);
         Moon.Draw(ourShader);
-
-
 
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);

@@ -54,6 +54,6 @@ The goal of this memory game is to find all pairs of cards.
 # Objects and textures location
 https://drive.google.com/file/d/1xmA40iyhLyuoLuxieHd1jTHtbLDHVW-A/view?usp=sharing
 
-Extract downloaded file into resources
+Extract downloaded file into resources if needed
 # Short Video
 https://youtu.be/-1Sm67zUf4c
