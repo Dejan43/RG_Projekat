@@ -13,6 +13,7 @@ The goal of this memory game is to find all pairs of cards.
 | ```Mouse scroll```                                                      | Zooming the camera             |
 | ```Space``` , ```Left control```                                        | Moving up and down             |
 | ```B``` ,```N``` , ```M```                                              | Bloom on/off, exposure dec/inc |
+| ```T```                                                                 | Turn on/off table light        |
 | ```ESC```                                                               | Exiting the game               |
 
 # Implemented:
@@ -55,4 +56,4 @@ https://drive.google.com/file/d/1xmA40iyhLyuoLuxieHd1jTHtbLDHVW-A/view?usp=shari
 
 Extract downloaded file into resources
 # Short Video
-
+https://youtu.be/-1Sm67zUf4c

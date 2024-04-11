@@ -64,6 +64,9 @@ struct DirLight {
     glm::vec3 specular;
 
 };
+struct SpotLight {
+    bool turnOn;
+};
 struct ProgramState {
     glm::vec3 clearColor = glm::vec3(0);
     bool ImGuiEnabled = false;
@@ -73,6 +76,7 @@ struct ProgramState {
     float backpackScale = 1.0f;
     PointLight pointLight;
     DirLight dirLight;
+    SpotLight spotLight;
 
     ProgramState()
             : camera(glm::vec3(0.0f, 0.0f, 3.0f)) {}
@@ -191,6 +195,8 @@ int main() {
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     // build and compile shaders
     // -------------------------
@@ -486,6 +492,8 @@ int main() {
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
     //initialize point light
+    SpotLight& spotLight = programState->spotLight;
+
     PointLight& pointLight = programState->pointLight;
     pointLight.position = glm::vec3(1.75,16.55,7.3);
     pointLight.ambient = glm::vec3(0.1, 0.1, 0.1);
@@ -497,6 +505,9 @@ int main() {
     pointLight.quadratic = 0.012f;
 
     DirLight& dirLight = programState->dirLight;
+    dirLight.diffuse = glm::vec3(0.25, 0.25, 0.25);
+    dirLight.specular = glm::vec3(0.20, 0.20, 0.20);
+    dirLight.direction = glm::vec3(-0.1,-0.5, 1.0);
     // lighting info
     // -------------
     // positions
@@ -530,6 +541,7 @@ int main() {
     vector<int> newOrder(8, -1);
     glm::vec3 cubePosition2[8];
 
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
@@ -556,9 +568,6 @@ int main() {
         // don't forget to enable shader before setting uniforms
         ourShader.use();
         dirLight.ambient = glm::vec3(0.02, 0.02, 0.02);
-        dirLight.diffuse = glm::vec3(0.25, 0.25, 0.25);
-        dirLight.specular = glm::vec3(0.20, 0.20, 0.20);
-        dirLight.direction = glm::vec3(-0.1,-0.5, 1.0);
 
         ourShader.setVec3("pointLight.position", pointLight.position);
         ourShader.setVec3("pointLight.ambient", pointLight.ambient);
@@ -586,6 +595,8 @@ int main() {
         ourShader.setFloat("spotLight.quadratic", 0.039);
         ourShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(28.5f)));
         ourShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(36.0f)));
+        ourShader.setFloat("spotLight.turnOn",spotLight.turnOn);
+
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
                                                 (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
@@ -750,7 +761,6 @@ int main() {
         }
         // --------------------------------------------------
         // render cards
-        glEnable(GL_CULL_FACE);
         glBindVertexArray(VAO);
         int pair = 0;
         bool drawVictory = true;
@@ -811,6 +821,8 @@ int main() {
         shaderLight.setMat4("view", view);
         for (unsigned int i = 0; i < lightPositions.size(); i++)
         {
+            if (i == 0 && !spotLight.turnOn)
+                continue;
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(lightPositions[i]));
             model = glm::rotate(model, (float)glm::radians(-10.f),glm::vec3(0,1,0));
@@ -1021,6 +1033,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
     }
+    //spotLight on/off
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+        programState->spotLight.turnOn = !programState->spotLight.turnOn;
     // --------------------------------------------------
     // USED FOR MINI GAME
     if (key == GLFW_KEY_1 && action == GLFW_PRESS) gameState.card = 0;
